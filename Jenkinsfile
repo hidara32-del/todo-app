@@ -17,19 +17,19 @@ pipeline {
 
         stage('Construire l image Docker') {
             steps {
-                bat 'docker build -t todo-app .'
+                bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t todo-app .'
             }
         }
 
         stage('Supprimer ancien conteneur') {
             steps {
-                bat 'docker rm -f todo-container || exit 0'
+                bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f todo-container || exit 0'
             }
         }
 
         stage('Lancer le conteneur') {
             steps {
-                bat 'docker run -d --name todo-container -p 8081:8080 todo-app'
+                bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" run -d --name todo-container -p 8081:8080 todo-app'
             }
         }
     }
