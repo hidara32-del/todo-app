@@ -5,7 +5,8 @@ pipeline {
 
         stage('Cloner le dépôt') {
             steps {
-                git branch: 'main', url: 'https://github.com/hidara32-del/todo-app.git'
+                git branch: 'main',
+                    url: 'https://github.com/hidara32-del/todo-app.git'
             }
         }
 
@@ -23,7 +24,15 @@ pipeline {
 
         stage('Push Docker Hub') {
             steps {
-                bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push sarahida/todo-app:latest'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push sarahida/todo-app:latest'
+                }
             }
         }
 
@@ -41,9 +50,19 @@ pipeline {
 
         stage('Déploiement Kubernetes') {
             steps {
-                bat 'kubectl apply -f kubernetes/deployment.yaml'
-                bat 'kubectl apply -f kubernetes/service.yaml'
+                bat 'kubectl apply -f kubernetes\\deployment.yaml'
+                bat 'kubectl apply -f kubernetes\\service.yaml'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Déploiement terminé avec succès !'
+        }
+
+        failure {
+            echo 'Le pipeline a échoué.'
         }
     }
 }
