@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        KUBECONFIG = 'C:\\Users\\lenov\\.kube\\config'
+    }
+
     stages {
 
         stage('Cloner le dépôt') {
