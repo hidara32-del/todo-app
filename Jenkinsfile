@@ -48,6 +48,15 @@ pipeline {
             }
         }
 
+        stage('Diagnostic Kubernetes') {
+            steps {
+                bat 'kubectl version --client'
+                bat 'kubectl config current-context'
+                bat 'kubectl cluster-info'
+                bat 'kubectl get nodes'
+            }
+        }
+
         stage('Déploiement Kubernetes') {
             steps {
                 bat 'kubectl apply -f kubernetes\\deployment.yaml'
