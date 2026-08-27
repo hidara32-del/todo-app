@@ -17,7 +17,7 @@ pipeline {
 
         stage('Lancer les tests unitaires') {
             steps {
-                bat 'mvnw.cmd clean test'
+                bat 'mvnw.cmd clean package'
             }
         }
 
