@@ -5,6 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         IMAGE_NAME = 'sarahida/todo-app'
         DOCKER = 'C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
+        KUBECONFIG = 'C:\\Users\\lenov\\.kube\\config'
     }
 
     stages {
