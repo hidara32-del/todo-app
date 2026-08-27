@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         IMAGE_NAME = 'sarahida/todo-app'
+        DOCKER = 'C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
     }
 
     stages {
@@ -22,14 +23,14 @@ pipeline {
 
         stage('Build de l\'image Docker') {
             steps {
-                bat "docker build -t %IMAGE_NAME%:latest ."
+                bat "\"%DOCKER%\" build -t %IMAGE_NAME%:latest ."
             }
         }
 
         stage('Push vers Docker Hub') {
             steps {
-                bat "docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%"
-                bat "docker push %IMAGE_NAME%:latest"
+                bat "\"%DOCKER%\" login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%"
+                bat "\"%DOCKER%\" push %IMAGE_NAME%:latest"
             }
         }
 
