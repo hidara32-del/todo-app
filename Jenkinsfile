@@ -2,67 +2,43 @@ pipeline {
     agent any
 
     environment {
-        KUBECONFIG = 'C:\\Users\\lenov\\.kube\\config'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        IMAGE_NAME = 'sarahida/todo-app'
     }
 
     stages {
 
         stage('Cloner le dépôt') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/hidara32-del/todo-app.git'
+                git branch: 'main', url: 'https://github.com/hidara32-del/todo-app.git'
             }
         }
 
-        stage('Build Maven') {
+        stage('Lancer les tests unitaires') {
             steps {
-                bat 'mvnw.cmd clean package'
+                bat 'mvnw.cmd clean test'
             }
         }
 
-        stage('Construire l image Docker') {
+        stage('Build de l\'image Docker') {
             steps {
-                bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t sarahida/todo-app:latest .'
+                bat "docker build -t %IMAGE_NAME%:latest ."
             }
         }
 
-        stage('Push Docker Hub') {
+        stage('Push vers Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-
-                    bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" login -u %DOCKER_USER% -p %DOCKER_PASS%'
-                    bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" push sarahida/todo-app:latest'
-                }
+                bat "docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%"
+                bat "docker push %IMAGE_NAME%:latest"
             }
         }
 
-        stage('Supprimer ancien conteneur') {
+        stage('Déploiement sur Kubernetes') {
             steps {
-                bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f todo-container || exit 0'
-            }
-        }
-
-        stage('Lancer le conteneur') {
-            steps {
-                bat '"C:\\Users\\lenov\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" run -d --name todo-container -p 8081:8080 sarahida/todo-app:latest'
-            }
-        }
-
-        stage('Diagnostic Kubernetes') {
-            steps {
-                bat 'kubectl version --client'
-                bat 'kubectl config current-context'
-                bat 'kubectl cluster-info'
-                bat 'kubectl get nodes'
-            }
-        }
-
-        stage('Déploiement Kubernetes') {
-            steps {
+                bat 'kubectl apply -f kubernetes\\secret.yaml'
+                bat 'kubectl apply -f kubernetes\\postgres-pvc.yaml'
+                bat 'kubectl apply -f kubernetes\\postgres-deployment.yaml'
+                bat 'kubectl apply -f kubernetes\\postgres-service.yaml'
                 bat 'kubectl apply -f kubernetes\\deployment.yaml'
                 bat 'kubectl apply -f kubernetes\\service.yaml'
             }
@@ -71,11 +47,10 @@ pipeline {
 
     post {
         success {
-            echo 'Déploiement terminé avec succès !'
+            echo 'Pipeline exécuté avec succès : clone, tests, build, push et déploiement terminés !'
         }
-
         failure {
-            echo 'Le pipeline a échoué.'
+            echo 'Le pipeline a échoué — vérifier les logs ci-dessus.'
         }
     }
 }
